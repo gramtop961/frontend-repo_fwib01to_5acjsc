@@ -1,28 +1,69 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react';
+import Hero from './components/Hero';
+import ParticleField from './components/ParticleField';
+import Preloader from './components/Preloader';
+import AudioToggle from './components/AudioToggle';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [booted, setBooted] = useState(false);
+
+  useEffect(() => {
+    // Load cyber fonts dynamically without touching index.html
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap';
+    document.head.appendChild(link);
+
+    const t = setTimeout(() => setBooted(true), 2100);
+    return () => {
+      clearTimeout(t);
+      document.head.removeChild(link);
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Vibe Coding Platform
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Your AI-powered development environment
-        </p>
-        <div className="text-center">
-          <button
-            onClick={() => setCount(count + 1)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          >
-            Count is {count}
-          </button>
+    <div className="relative min-h-screen bg-black text-white">
+      {!booted && <Preloader onComplete={() => setBooted(true)} />}
+
+      {/* Background 3D + particles */}
+      <div className="absolute inset-0">
+        <ParticleField />
+      </div>
+
+      {/* Main hero */}
+      <Hero />
+
+      {/* Ambient control */}
+      <div className="pointer-events-none absolute bottom-6 left-1/2 z-30 -translate-x-1/2 md:left-8 md:translate-x-0">
+        <div className="pointer-events-auto">
+          <AudioToggle />
         </div>
       </div>
+
+      {/* HUD corners */}
+      <div className="pointer-events-none fixed inset-0 z-30">
+        <Corner position="tl" />
+        <Corner position="tr" />
+        <Corner position="bl" />
+        <Corner position="br" />
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+function Corner({ position }) {
+  const base = 'absolute w-20 h-20 opacity-60';
+  const map = {
+    tl: 'top-0 left-0 border-l border-t',
+    tr: 'top-0 right-0 border-r border-t',
+    bl: 'bottom-0 left-0 border-l border-b',
+    br: 'bottom-0 right-0 border-r border-b',
+  };
+  return (
+    <div
+      className={`${base} ${map[position]} border-cyan-400/40 [mask-image:radial-gradient(80%_80%_at_0%_0%,#000_30%,transparent_70%)]`}
+    />
+  );
+}
+
+export default App;
